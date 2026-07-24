@@ -1,6 +1,7 @@
 from parser import read_excel
 from validator import validate_columns
 from mapper import map_columns
+from word_generator import create_word_document
 
 from data_validator import (
     check_empty_cells,
@@ -143,3 +144,8 @@ if data is not None:
 
         for column in missing:
             print(f"- {column}")
+
+print("Saved to: output/technical_offer.txt")
+create_word_document()
+
+print("Word document created successfully!")
