@@ -1,11 +1,20 @@
 from parser import read_excel
 from validator import validate_columns
 from mapper import map_columns
+
 from data_validator import (
     check_empty_cells,
     check_duplicates,
     check_data_types,
 )
+
+from business_validator import validate_business_rules
+
+from report_generator import (
+    generate_report,
+    save_report,
+)
+
 from config import REQUIRED_COLUMNS, COLUMN_MAPPING
 
 
@@ -28,12 +37,17 @@ if data is not None:
         # Rename columns
         mapped_data = map_columns(data, COLUMN_MAPPING)
 
+        has_errors = False
+
         # -------------------------
         # Empty Cell Validation
         # -------------------------
+
         empty_columns = check_empty_cells(mapped_data)
 
         if empty_columns:
+
+            has_errors = True
 
             print("\nData Validation Failed!")
             print("The following columns contain empty values:")
@@ -46,12 +60,14 @@ if data is not None:
             print("\nNo empty cells found.")
 
             # -------------------------
-            # Duplicate Check
+            # Duplicate Validation
             # -------------------------
+
             duplicates = check_duplicates(mapped_data)
 
             if not duplicates.empty:
 
+                has_errors = True
                 print("\nDuplicate records found!")
                 print(duplicates)
 
@@ -62,10 +78,12 @@ if data is not None:
             # -------------------------
             # Data Type Validation
             # -------------------------
+
             type_errors = check_data_types(mapped_data)
 
             if type_errors:
 
+                has_errors = True
                 print("\nData Type Errors Found!")
 
                 for error in type_errors:
@@ -76,10 +94,47 @@ if data is not None:
                 print("\nAll data types are valid.")
 
             # -------------------------
-            # Display Final Data
+            # Business Validation
             # -------------------------
+
+            business_errors = validate_business_rules(mapped_data)
+
+            if business_errors:
+
+                has_errors = True
+
+                print("\nBusiness Rule Errors Found!")
+
+                for error in business_errors:
+                    print(error)
+
+            else:
+
+                print("\nBusiness Rules Passed.")
+
+            # -------------------------
+            # Final Data
+            # -------------------------
+
             print("\nFinal Processed Data:\n")
             print(mapped_data)
+
+            # -------------------------
+            # Generate Report
+            # -------------------------
+
+            if not has_errors:
+
+                report = generate_report(mapped_data)
+
+                save_report(report, "output/technical_offer.txt")
+
+                print("\nTechnical Offer generated successfully!")
+                print("Saved to: output/technical_offer.txt")
+
+            else:
+
+                print("\nReport generation cancelled because validation failed.")
 
     else:
 
